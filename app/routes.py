@@ -45,11 +45,11 @@ def _tickets():
     elif request.method == 'GET':
         try:
             tickets = get_all_tickets()
-        except:
+        except Exception as err:
             response = {
                 "isOk": False,
                 "status": 500,
-                "message": "Something went wrong",
+                "message": f"{err}"
             }
         else:
             if tickets:
@@ -114,11 +114,11 @@ def _tickets():
             ticket_id = request_data['ticket_id']
             try:
                 message = delete_ticket( ticket_id )
-            except:
+            except Exception as err:
                 response = {
                     "isOk": False,
                     "status": 500,
-                    "message": "Something went wrong",
+                    "message": f"{err}",
                 }
             else:
                 response = {
@@ -135,11 +135,11 @@ def _ticket_single( ticket_id ):
     if request.method == 'GET':
         try:
             ticket = get_single_ticket( ticket_id )
-        except:
+        except Exception as err:
             response = {
                 "isOk": False,
                 "status": 500,
-                "message": "Something went wrong",
+                "message": f"{err}",
             }
         else:
             if ticket:
@@ -161,7 +161,6 @@ def _ticket_single( ticket_id ):
                     "status": 500,
                     "message": "Ticket does not exists",
                 }
-
     return jsonify(response)
 
 
@@ -210,11 +209,11 @@ def _branches():
             ticket_id = request_data['ticket_id']
             try:
                 branches = get_all_branches( ticket_id )
-            except:
+            except Exception as err:
                 response = {
                     "isOk": False,
                     "status": 500,
-                    "message": "Something went wrong",
+                    "message": f"{err}",
                 }
             else:
                 if branches:
@@ -276,11 +275,11 @@ def _branches():
             branch_id = request_data['branch_id']
             try:
                 message = delete_branch( branch_id )
-            except:
+            except Exception as err:
                 response = {
                     "isOk": False,
                     "status": 500,
-                    "message": "Something went wrong",
+                    "message": f"{err}",
                 }
             else:
                 response = {
@@ -288,5 +287,4 @@ def _branches():
                     "status": 200,
                     "message": "Branch deleted successfully",
                 }
-
     return jsonify(response)

@@ -11,16 +11,15 @@ def add_ticket( ticket_number, ticket_description, ticket_status ):
         )
         ticket_id = cur.fetchone()
         con.commit()
-    except psycopg2.errors.IntegrityError:
+    except pymysql.err.IntegrityError:
         con.rollback()
         raise Exception(f"Ticket {ticket_number} already exists")
-    except psycopg2.errors.InvalidTextRepresentation:
+    except pymysql.err.ProgrammingError:
         con.rollback()
         raise Exception("Invalid status")
     finally:
         cur.close()
-        cur.close()
-
+        con.close()
     return ticket_id
 
 
@@ -33,11 +32,10 @@ def get_all_tickets():
         )
         tickets = cur.fetchall()
     except Exception as err:
-        raise
+        raise Exception(err)
     finally:
         cur.close()
         con.close()
-
     return tickets
 
 
@@ -51,8 +49,7 @@ def get_single_ticket( ticket_id ):
         )
         ticket = cur.fetchone()
     except Exception as err:
-        print(err)
-        raise
+        raise Exception(err)
     finally:
         cur.close()
         con.close()
@@ -69,10 +66,10 @@ def update_ticket( ticket_id, ticket_code, ticket_description, ticket_status ):
             (ticket_code, ticket_description, ticket_status, ticket_id)
         )
         con.commit()
-    except psycopg2.errors.IntegrityError:
+    except pymysql.err.IntegrityError:
         con.rollback()
         raise Exception(f"Ticket {ticket_code} already exists")
-    except psycopg2.errors.InvalidTextRepresentation:
+    except pymysql.err.ProgrammingError:
         con.rollback()
         raise Exception("Invalid status")
     finally:
@@ -97,8 +94,7 @@ def delete_ticket( ticket_id ):
         con.commit()
     except Exception as err:
         con.rollback()
-        print(err)
-        raise
+        raise Exception(err)
     finally:
         cur.close()
         con.close()
@@ -116,10 +112,10 @@ def add_branch( ticket_id, branch_name, branch_status ):
         )
         branch_id = cur.fetchone()
         con.commit()
-    except psycopg2.errors.IntegrityError:
+    except pymysql.err.IntegrityError:
         con.rollback()
         raise ValueError(f"Branch {branch_name} already exists")
-    except psycopg2.errors.InvalidTextRepresentation:
+    except pymysql.err.ProgrammingError:
         con.rollback()
         raise Exception("Invalid status")
     finally:
@@ -139,12 +135,10 @@ def get_all_branches( ticket_id ):
         )
         branches = cur.fetchall()
     except Exception as err:
-        print(err)
-        raise
+        raise Exception(err)
     finally:
         cur.close()
         con.close()
-
     return branches
 
 
@@ -157,16 +151,15 @@ def update_branch( branch_id, branch_name, branch_status ):
             (branch_name, branch_status, branch_id,)
         )
         con.commit()
-    except psycopg2.errors.IntegrityError:
+    except pymysql.err.IntegrityError:
         con.rollback()
         raise ValueError(f"Branch {branch_name} already exists")
-    except psycopg2.errors.InvalidTextRepresentation:
+    except pymysql.err.ProgrammingError:
         con.rollback()
         raise ValueError("Invalid Status")
     finally:
         cur.close()
         con.close()
-
     return True
 
 
@@ -181,10 +174,8 @@ def delete_branch( branch_id ):
         con.commit()
     except Exception as err:
         con.rollback()
-        print(err)
-        raise
+        raise Exception(err)
     finally:
         cur.close()
         con.close()
-
     return True

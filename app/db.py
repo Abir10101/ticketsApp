@@ -1,10 +1,13 @@
 import pymysql
-import os
+from app.config import Config
 
 
 def db_connection():
-    con = pymysql.connect(  host="sql6.freemysqlhosting.net",
-                            user="sql6521869",
-                            password="VtjDmWW1ed",
-                            database="sql6521869" )
+    try:
+        con = pymysql.connect(  host = Config.DB_HOST,
+                                user = Config.DB_USER,
+                                password = Config.DB_PASSWORD,
+                                database = Config.DB_NAME )
+    except pymysql.err.DatabaseError:
+        raise Exception('Cannot connect Database')
     return con

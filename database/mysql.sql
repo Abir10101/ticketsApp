@@ -1,6 +1,3 @@
-DROP TABLE IF EXISTS tickets;
-DROP TABLE IF EXISTS branches;
-
 CREATE TABLE tickets (
     id  SERIAL  NOT NULL,
     t_code  VARCHAR(20)  NOT NULL  UNIQUE,

@@ -145,6 +145,8 @@ def get_all_branches( ticket_id ):
 def update_branch( branch_id, branch_name, branch_status ):
     con = db_connection()
     cur = con.cursor()
+    if branch_status not in BRANCH_STATUS_TUPLE:
+        raise Exception("Invalid Status")
     try:
         cur.execute(
             "UPDATE branches SET b_name = %s, b_status = %s WHERE id = %s;",
@@ -154,9 +156,6 @@ def update_branch( branch_id, branch_name, branch_status ):
     except pymysql.err.IntegrityError:
         con.rollback()
         raise Exception(f"Branch {branch_name} already exists")
-    except pymysql.err.ProgrammingError:
-        con.rollback()
-        raise Exception("Invalid Status")
     finally:
         cur.close()
         con.close()

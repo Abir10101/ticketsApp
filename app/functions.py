@@ -1,22 +1,27 @@
 from app.db import *
 
 
+# Global variables
+TICKET_STATUS_TUPLE = ('completed', 'ongoing', 'done')
+BRANCH_STATUS_TUPLE = ('live', 'not_live')
+
+
+# functions
 def add_ticket( ticket_number, ticket_description, ticket_status ):
     con = db_connection()
     cur = con.cursor()
+    if ticket_status not in TICKET_STATUS_TUPLE:
+        raise Exception("Invalid Status")
     try:
         cur.execute(
-            "INSERT INTO tickets (t_code, t_description, t_status) VALUES ( %s, %s, %s ) RETURNING id;",
-            (ticket_number, ticket_description, ticket_status,)
+            "INSERT INTO tickets (t_code, t_description, t_status) VALUES ( %s, %s, %s )",
+            (ticket_number, ticket_description, ticket_status)
         )
-        ticket_id = cur.fetchone()
+        ticket_id = con.insert_id()
         con.commit()
     except pymysql.err.IntegrityError:
         con.rollback()
         raise Exception(f"Ticket {ticket_number} already exists")
-    except pymysql.err.ProgrammingError:
-        con.rollback()
-        raise Exception("Invalid status")
     finally:
         cur.close()
         con.close()
@@ -53,13 +58,14 @@ def get_single_ticket( ticket_id ):
     finally:
         cur.close()
         con.close()
-
     return ticket
 
 
 def update_ticket( ticket_id, ticket_code, ticket_description, ticket_status ):
     con = db_connection()
     cur = con.cursor()
+    if ticket_status not in TICKET_STATUS_TUPLE:
+        raise Exception("Invalid Status")
     try:
         cur.execute(
             "UPDATE tickets SET t_code = %s, t_description = %s, t_status = %s WHERE id = %s;",
@@ -69,9 +75,6 @@ def update_ticket( ticket_id, ticket_code, ticket_description, ticket_status ):
     except pymysql.err.IntegrityError:
         con.rollback()
         raise Exception(f"Ticket {ticket_code} already exists")
-    except pymysql.err.ProgrammingError:
-        con.rollback()
-        raise Exception("Invalid status")
     finally:
         cur.close()
         cur.close()
@@ -98,30 +101,27 @@ def delete_ticket( ticket_id ):
     finally:
         cur.close()
         con.close()
-
     return True
 
 
 def add_branch( ticket_id, branch_name, branch_status ):
     con = db_connection()
     cur = con.cursor()
+    if branch_status not in BRANCH_STATUS_TUPLE:
+        raise Exception("Invalid Status")
     try:
         cur.execute(
-            "INSERT INTO branches (ticket_id, b_name, b_status) VALUES ( %s, %s, %s ); RETURNING id",
+            "INSERT INTO branches (ticket_id, b_name, b_status) VALUES ( %s, %s, %s );",
             (ticket_id, branch_name, branch_status,)
         )
-        branch_id = cur.fetchone()
+        branch_id = con.insert_id()
         con.commit()
     except pymysql.err.IntegrityError:
         con.rollback()
-        raise ValueError(f"Branch {branch_name} already exists")
-    except pymysql.err.ProgrammingError:
-        con.rollback()
-        raise Exception("Invalid status")
+        raise Exception(f"Branch {branch_name} already exists")
     finally:
         cur.close()
         con.close()
-
     return branch_id
 
 
@@ -153,10 +153,10 @@ def update_branch( branch_id, branch_name, branch_status ):
         con.commit()
     except pymysql.err.IntegrityError:
         con.rollback()
-        raise ValueError(f"Branch {branch_name} already exists")
+        raise Exception(f"Branch {branch_name} already exists")
     except pymysql.err.ProgrammingError:
         con.rollback()
-        raise ValueError("Invalid Status")
+        raise Exception("Invalid Status")
     finally:
         cur.close()
         con.close()

@@ -126,7 +126,6 @@ def _tickets():
                     "status": 200,
                     "message": "Ticket deleted successfully",
                 }
-
     return jsonify(response)
 
 
@@ -144,11 +143,10 @@ def _ticket_single( ticket_id ):
         else:
             if ticket:
                 ticket_dict = {}
-                for data in ticket:
-                    ticket_dict["id"] = data[0]
-                    ticket_dict["code"] = data[1]
-                    ticket_dict["description"] = data[2]
-                    ticket_dict["status"] = data[3]
+                ticket_dict["id"] = ticket[0]
+                ticket_dict["code"] = ticket[1]
+                ticket_dict["description"] = ticket[2]
+                ticket_dict["status"] = ticket[3]
                 response = {
                     "isOk": True,
                     "status": 200,
@@ -194,7 +192,7 @@ def _branches():
                     "status": 200,
                     "message": "Branch added successfully",
                     "data": {
-                        "id": branch_id[0],
+                        "id": branch_id,
                     }
                 }
     if request.method == 'GET':

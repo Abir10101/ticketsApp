@@ -39,7 +39,7 @@ def _tickets():
                     "status": 200,
                     "message": "Ticket added successfully",
                     "data": {
-                        "ticket_id": ticket_id[0],
+                        "ticket_id": ticket_id,
                     }
                 }
     elif request.method == 'GET':

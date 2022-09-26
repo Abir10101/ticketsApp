@@ -1,6 +1,6 @@
 from flask import jsonify, request
 from app import app
-from app.functions import add_ticket, get_all_tickets, get_single_ticket, update_ticket, delete_ticket, add_branch, get_all_branches, update_branch, delete_branch
+from app.functions import add_ticket, get_all_tickets, get_single_ticket, update_ticket, delete_ticket, add_branch, get_all_branches, update_branch, delete_branch, add_user
 
 
 
@@ -284,5 +284,44 @@ def _branches():
                     "isOk": True,
                     "status": 200,
                     "message": "Branch deleted successfully",
+                }
+    return jsonify(response)
+
+
+@app.route( '/register', methods=['POST'] )
+def _resgister():
+    if request.method == 'POST':
+        request_data = request.get_json()
+        if 'username' not in request_data or \
+            'password' not in request_data or \
+            'name' not in request_data or \
+            len(request_data['username'].strip()) < 1 or \
+            len(request_data['password'].strip()) < 1 or \
+            len(request_data['name'].strip()) < 1:
+            response = {
+                "isOk": False,
+                "status": 500,
+                "message": "Invalid parameters passed"
+            }
+        else:
+            username = request_data['username']
+            password = request_data['password']
+            name = request_data['name']
+            try:
+                auth_token = add_user( username, password, name )
+            except Exception as err:
+                response = {
+                    "isOk": False,
+                    "status": 500,
+                    "message": f"{err}",
+                }
+            else:
+                response = {
+                    "isOk": True,
+                    "status": 200,
+                    "message": "User added successfully",
+                    "data": {
+                        "token": auth_token,
+                    }
                 }
     return jsonify(response)

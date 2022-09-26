@@ -1,4 +1,8 @@
+import jwt
+import datetime
+import bcrypt
 from app.db import *
+from app import app
 
 
 # Global variables
@@ -78,7 +82,6 @@ def update_ticket( ticket_id, ticket_code, ticket_description, ticket_status ):
     finally:
         cur.close()
         cur.close()
-
     return True
 
 
@@ -178,3 +181,48 @@ def delete_branch( branch_id ):
         cur.close()
         con.close()
     return True
+
+
+def encode_auth_token( user_id :int ) -> str:
+    payload = {
+        'exp': datetime.datetime.utcnow() + datetime.timedelta( days=0, seconds=5 ),
+        'iat': datetime.datetime.utcnow(),
+        'sub': user_id
+    }
+    return jwt.encode(
+        payload,
+        app.secret_key,
+        algorithm='HS256'
+    )
+
+
+def decode_auth_token( token :str ) -> int:
+    try:
+        payload = jwt.decode( token, app.secret_key, algorithms='HS256' )
+    except jwt.ExpiredSignatureError:
+        raise Exception('Token expired.')
+    except jwt.InvalidTokenError:
+        raise Exception('Invalid token.')
+    return payload['sub']
+
+
+def add_user( username :str, password :str, name :str ) -> str:
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw( password.encode(), salt )
+    con = db_connection()
+    cur = con.cursor()
+    try:
+        cur.execute(
+            "INSERT INTO users (u_name, u_username, u_password) VALUES ( %s, %s, %s );",
+            (name, username, hashed)
+        )
+        user_id = con.insert_id()
+        con.commit()
+    except pymysql.err.IntegrityError:
+        con.rollback()
+        raise Exception(f"Username {username} already exists")
+    finally:
+        cur.close()
+        con.close()
+    token = encode_auth_token( user_id )
+    return token

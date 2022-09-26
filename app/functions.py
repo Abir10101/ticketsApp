@@ -207,8 +207,7 @@ def decode_auth_token( token :str ) -> int:
 
 
 def add_user( username :str, password :str, name :str ) -> str:
-    salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw( password.encode(), salt )
+    hashed = bcrypt.hashpw( password.encode(), bcrypt.gensalt() )
     con = db_connection()
     cur = con.cursor()
     try:
@@ -226,3 +225,31 @@ def add_user( username :str, password :str, name :str ) -> str:
         con.close()
     token = encode_auth_token( user_id )
     return token
+
+
+def login_user( username :str, password :str ) -> list:
+    con = db_connection()
+    cur = con.cursor()
+    try:
+        cur.execute(
+            "SELECT id, u_name, u_password FROM users WHERE u_username = %s;",
+            (username)
+        )
+        user = cur.fetchone()
+    except Exception as err:
+        raise Exception(err)
+    finally:
+        cur.close()
+        con.close()
+    if user:
+        if bcrypt.checkpw( password.encode(), user['u_password'].encode() ):
+            token = encode_auth_token( user['id'] )
+            name = user['u_name']
+        else:
+            raise Exception("Invalid Password")
+    else:
+        raise Exception("User does not exists")
+    return [token, name]
+
+
+

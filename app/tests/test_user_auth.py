@@ -1,5 +1,5 @@
 import unittest
-from app.functions import encode_auth_token, decode_auth_token, add_user
+from app.functions import encode_auth_token, decode_auth_token, add_user, login_user
 
 
 class TestUser( unittest.TestCase ):
@@ -17,12 +17,19 @@ class TestUser( unittest.TestCase ):
         self.assertTrue( decode_auth_token(token) == 3 )
 
 
-    def test_add_user(self):
+    # def test_add_user(self):
+    #     username = 'test1'
+    #     password = 'test1'
+    #     name = 'test1'
+    #     token = add_user( username, password, name )
+    #     self.assertTrue( isinstance( token, str ) )
+
+
+    def test_login_user(self):
         username = 'test1'
-        password = 'test1'
-        name = 'test1'
-        token = add_user( username, password, name )
-        self.assertTrue( isinstance( token, str ) )
+        password = 'test2'
+        user_details = login_user( username, password )
+        self.assertTrue( isinstance( user_details, list ) )
 
 
 

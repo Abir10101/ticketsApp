@@ -1,6 +1,6 @@
 from flask import jsonify, request
 from app import app
-from app.functions import add_ticket, get_all_tickets, get_single_ticket, update_ticket, delete_ticket, add_branch, get_all_branches, update_branch, delete_branch, add_user
+from app.functions import add_ticket, get_all_tickets, get_single_ticket, update_ticket, delete_ticket, add_branch, get_all_branches, update_branch, delete_branch
 
 
 
@@ -56,10 +56,10 @@ def _tickets():
                 tickets_dict = {}
                 for count, ticket in enumerate(tickets):
                     tickets_dict[count] = {}
-                    tickets_dict[count]["id"] = ticket[0]
-                    tickets_dict[count]["code"] = ticket[1]
-                    tickets_dict[count]["description"] = ticket[2]
-                    tickets_dict[count]["status"] = ticket[3]
+                    tickets_dict[count]["id"] = ticket['id']
+                    tickets_dict[count]["code"] = ticket['t_code']
+                    tickets_dict[count]["description"] = ticket['t_description']
+                    tickets_dict[count]["status"] = ticket['t_status']
                 response = {
                     "isOk": True,
                     "status": 200,
@@ -143,10 +143,10 @@ def _ticket_single( ticket_id ):
         else:
             if ticket:
                 ticket_dict = {}
-                ticket_dict["id"] = ticket[0]
-                ticket_dict["code"] = ticket[1]
-                ticket_dict["description"] = ticket[2]
-                ticket_dict["status"] = ticket[3]
+                ticket_dict["id"] = ticket['id']
+                ticket_dict["code"] = ticket['t_code']
+                ticket_dict["description"] = ticket['t_description']
+                ticket_dict["status"] = ticket['t_status']
                 response = {
                     "isOk": True,
                     "status": 200,
@@ -218,9 +218,9 @@ def _branches():
                     branches_dict = {}
                     for count, branch in enumerate(branches):
                         branches_dict[count] = {}
-                        branches_dict[count]["id"] = branch[0]
-                        branches_dict[count]["name"] = branch[1]
-                        branches_dict[count]["status"] = branch[2]
+                        branches_dict[count]["id"] = branch['id']
+                        branches_dict[count]["name"] = branch['b_name']
+                        branches_dict[count]["status"] = branch['b_status']
                     response = {
                         "isOk": True,
                         "status": 200,
@@ -325,3 +325,40 @@ def _resgister():
                     }
                 }
     return jsonify(response)
+
+
+@app.route( '/login', methods=['POST'] )
+def _login():
+    if request.method == 'POST':
+        request_data = request.get_json()
+        if 'username' not in request_data or \
+           'password' not in request_data or \
+           len(request_data['username'].strip()) < 1 or \
+           len(request_data['password'].strip()) < 1:
+            response = {
+                "isOk": False,
+                "status": 500,
+                "message": "Invalid parameters passed"
+            }
+        else:
+            username = request_data['username']
+            password = request_data['password']
+            try:
+                auth_token = login_user( username, password )
+            except Exception as err:
+                response = {
+                    "isOk": False,
+                    "status": 500,
+                    "message": f"{err}",
+                }
+            else:
+                response = {
+                    "isOk": True,
+                    "status": 200,
+                    "message": "User added successfully",
+                    "data": {
+                        "token": auth_token
+                    }
+                }
+    return jsonify(response)
+

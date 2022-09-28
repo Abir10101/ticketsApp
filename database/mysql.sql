@@ -20,3 +20,4 @@ CREATE TABLE users (
 
 ALTER  TABLE  tickets  ADD  user_id  BIGINT  NOT NULL;
 ALTER  TABLE  users  ADD  u_name  VARCHAR(50)  NOT NULL;
+ALTER  TABLE  users  ADD  u_secret  VARCHAR(15)  NOT NULL;

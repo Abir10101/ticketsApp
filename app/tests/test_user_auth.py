@@ -1,35 +1,58 @@
 import unittest
-from app.functions import encode_auth_token, decode_auth_token, add_user, login_user
+import secrets
+from app.auth import *
 
 
 class TestUser( unittest.TestCase ):
 
     def test_encode_auth_token(self):
         user_id = 1
-        token = encode_auth_token( user_id )
+        secret = secrets.token_urlsafe(10)
+        token = encode_auth_token( user_id, secret )
         self.assertTrue( isinstance( token, str ) )
 
 
     def test_decode_auth_token(self):
         user_id = 3
-        token = encode_auth_token( user_id )
+        secret = secrets.token_urlsafe(10)
+        token = encode_auth_token( user_id, secret )
         self.assertTrue( isinstance( token, str ) )
-        self.assertTrue( decode_auth_token(token) == 3 )
+        decoded = decode_auth_token(token)
+        self.assertTrue( isinstance( decoded, dict ))
 
 
-    # def test_add_user(self):
-    #     username = 'test1'
-    #     password = 'test1'
-    #     name = 'test1'
-    #     token = add_user( username, password, name )
-    #     self.assertTrue( isinstance( token, str ) )
+    def test_register_user(self):
+        username = 'test3'
+        password = 'test3'
+        name = 'test1'
+        token = user.register( username, password, name )
+        self.assertTrue( isinstance( token, str ) )
 
 
     def test_login_user(self):
         username = 'test1'
+        password = 'test1'
+        auth_token = user.login( username, password )
+        self.assertTrue( isinstance( auth_token, str ) )
+
+
+    def test_user_status(self):
+        username = 'test1'
+        password = 'test1'
+        token = user.login( username, password )
+        new_token = user.status( token )
+        self.assertTrue( isinstance(token, str) )
+        self.assertTrue( new_token == token )
+
+
+    def test_logout_user(self):
+        username = 'test2'
         password = 'test2'
-        user_details = login_user( username, password )
-        self.assertTrue( isinstance( user_details, list ) )
+        token = user.login( username, password )
+        new_token = user.status( token )
+        self.assertTrue( user.logout( new_token ) )
+        status = user.status( new_token )
+        self.assertFalse( status )
 
 
 

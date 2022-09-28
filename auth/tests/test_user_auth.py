@@ -1,6 +1,6 @@
 import unittest
 import secrets
-from app.auth import *
+from auth import *
 
 
 class TestUser( unittest.TestCase ):

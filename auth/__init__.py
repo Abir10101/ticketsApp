@@ -1,7 +1,7 @@
 import jwt
 import datetime
 from app import app
-from app.auth.config import Config
+from auth.config import Config
 
 
 
@@ -36,4 +36,4 @@ def decode_auth_token( token :str ) -> dict:
 
 
 
-from app.auth import user
+from auth import user

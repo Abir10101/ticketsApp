@@ -2,8 +2,7 @@ import datetime
 import bcrypt
 import secrets
 from app.db import *
-from app.auth import *
-from app.auth.config import Config
+from auth import *
 
 
 

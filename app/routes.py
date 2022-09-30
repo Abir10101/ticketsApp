@@ -1,6 +1,10 @@
 from flask import jsonify, request
 from app import app
-from app.functions import add_ticket, get_all_tickets, get_single_ticket, update_ticket, delete_ticket, add_branch, get_all_branches, update_branch, delete_branch
+
+from app.utils import add_ticket, get_all_tickets, get_single_ticket, update_ticket, delete_ticket, add_branch, get_all_branches, update_branch, delete_branch
+from app.decorators import token_required
+
+import auth
 
 
 
@@ -308,7 +312,7 @@ def _resgister():
             password = request_data['password']
             name = request_data['name']
             try:
-                auth_token = add_user( username, password, name )
+                token = auth.user.register( username, password, name )
             except Exception as err:
                 response = {
                     "isOk": False,
@@ -321,7 +325,7 @@ def _resgister():
                     "status": 200,
                     "message": "User added successfully",
                     "data": {
-                        "token": auth_token,
+                        "token": token,
                     }
                 }
     return jsonify(response)
@@ -344,7 +348,7 @@ def _login():
             username = request_data['username']
             password = request_data['password']
             try:
-                auth_token = login_user( username, password )
+                token = auth.user.login( username, password )
             except Exception as err:
                 response = {
                     "isOk": False,
@@ -355,10 +359,45 @@ def _login():
                 response = {
                     "isOk": True,
                     "status": 200,
-                    "message": "User added successfully",
+                    "message": "User login successfully",
                     "data": {
-                        "token": auth_token
+                        "token": token
                     }
                 }
     return jsonify(response)
 
+
+@app.route( '/logout', methods=['POST'] )
+def _logout():
+    if request.method == 'POST':
+        request_data = request.get_json()
+        if 'token' not in request_data or \
+           len(request_data['token'].strip()) < 1:
+            response = {
+                "isOk": False,
+                "status": 500,
+                "message": "Invalid parameters passed"
+            }
+        else:
+            token = request_data['token']
+            try:
+                auth.user.logout( token )
+            except Exception as err:
+                response = {
+                    "isOk": False,
+                    "status": 500,
+                    "message": f"{err}",
+                }
+            else:
+                response = {
+                    "isOk": True,
+                    "status": 200,
+                    "message": "User logout successfully"
+                }
+    return jsonify(response)
+
+
+@app.route( '/restricted', methods=['POST'] )
+@token_required
+def _restricted(user_id, token):
+    return 'ok'

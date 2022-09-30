@@ -2,7 +2,8 @@ import datetime
 import bcrypt
 import secrets
 from app.db import *
-from auth import *
+from auth.config import Config
+from auth.utils import *
 
 
 
@@ -74,7 +75,7 @@ def logout( token :str ) -> bool:
     return True
 
 
-def status( token :str ) -> str:
+def details( token: str ) -> dict:
     decoded = decode_auth_token( token )
     user_id = decoded['user_id']
     token_secret = decoded['secret']
@@ -90,7 +91,7 @@ def status( token :str ) -> str:
         con.commit()
         # check if user has logged out
         if token_secret != user_secret:
-            return False
+            raise Exception("User Loggedout")
     except Exception as err:
         raise Exception(err)
     finally:
@@ -99,6 +100,8 @@ def status( token :str ) -> str:
     # check if token expiry less than 30 min left
     if (token_exp - datetime.datetime.utcnow()) < datetime.timedelta( seconds=Config.TOKEN_REFRESH_RATE ):
         new_token = encode_auth_token( user_id, token_secret )
-        return new_token
-    else:
-        return token
+        token = new_token
+    return {
+        "user_id": user_id,
+        "token": token
+    }

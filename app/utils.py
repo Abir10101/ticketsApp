@@ -1,5 +1,7 @@
 from app.db import *
 from app import app
+import auth
+
 
 
 # Global variables

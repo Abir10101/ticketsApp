@@ -14,7 +14,8 @@ def index():
 
 
 @app.route( '/tickets', methods=['GET', 'POST', 'PATCH', 'DELETE'] )
-def _tickets():
+@token_required
+def _tickets( user_id, token ):
     if request.method == 'POST':
         request_data = request.get_json()
         if 'code' not in request_data or \
@@ -30,7 +31,7 @@ def _tickets():
             description = request_data['description']
             status = request_data['status']
             try:
-                ticket_id = add_ticket( code, description, status )
+                ticket_id = add_ticket( user_id, code, description, status )
             except Exception as err:
                 response = {
                     "isOk": False,
@@ -43,12 +44,13 @@ def _tickets():
                     "status": 200,
                     "message": "Ticket added successfully",
                     "data": {
+                        "token": token,
                         "ticket_id": ticket_id,
                     }
                 }
     elif request.method == 'GET':
         try:
-            tickets = get_all_tickets()
+            tickets = get_all_tickets( user_id )
         except Exception as err:
             response = {
                 "isOk": False,
@@ -68,7 +70,10 @@ def _tickets():
                     "isOk": True,
                     "status": 200,
                     "message": "Tickets fetched successfully",
-                    "data": tickets_dict,
+                    "data": {
+                        "token": token,
+                        "tickets": ticket_dict
+                    }
                 }
             else:
                 response = {
@@ -105,6 +110,9 @@ def _tickets():
                     "isOk": True,
                     "status": 200,
                     "message": "Ticket updated successfully",
+                    "data": {
+                        "token": token
+                    }
                 }
     elif request.method == 'DELETE':
         request_data = request.get_json()
@@ -129,12 +137,16 @@ def _tickets():
                     "isOk": True,
                     "status": 200,
                     "message": "Ticket deleted successfully",
+                    "data": {
+                        "token": token
+                    }
                 }
     return jsonify(response)
 
 
 @app.route( '/ticket/<int:ticket_id>', methods=['GET', 'PATCH', 'DELETE'] )
-def _ticket_single( ticket_id ):
+@token_required
+def _ticket_single( user_id, token, ticket_id ):
     if request.method == 'GET':
         try:
             ticket = get_single_ticket( ticket_id )
@@ -155,7 +167,10 @@ def _ticket_single( ticket_id ):
                     "isOk": True,
                     "status": 200,
                     "message": "Ticket fetched successfully",
-                    "data": ticket_dict
+                    "data": {
+                        "token": token,
+                        "ticket": ticket_dict
+                    }
                 }
             else:
                 response = {
@@ -167,7 +182,8 @@ def _ticket_single( ticket_id ):
 
 
 @app.route( '/branches', methods=['GET', 'POST', 'PATCH', 'DELETE'] )
-def _branches():
+@token_required
+def _branches( user_id, token ):
     if request.method == 'POST':
         request_data = request.get_json()
         if 'ticket_id' not in request_data or \
@@ -196,7 +212,8 @@ def _branches():
                     "status": 200,
                     "message": "Branch added successfully",
                     "data": {
-                        "id": branch_id,
+                        "token": token,
+                        "id": branch_id
                     }
                 }
     if request.method == 'GET':
@@ -229,7 +246,10 @@ def _branches():
                         "isOk": True,
                         "status": 200,
                         "message": "Branches fetched successfully",
-                        "data": branches_dict
+                        "data": {
+                            "token": token,
+                            "branches": branches_dict
+                        }
                     }
                 else:
                     response = {
@@ -264,6 +284,9 @@ def _branches():
                     "isOk": True,
                     "status": 200,
                     "message": "Branch updated successfully",
+                    "data": {
+                        "token": token
+                    }
                 }
     elif request.method == "DELETE":
         request_data = request.get_json()
@@ -288,6 +311,9 @@ def _branches():
                     "isOk": True,
                     "status": 200,
                     "message": "Branch deleted successfully",
+                    "data": {
+                        "token": token
+                    }
                 }
     return jsonify(response)
 
@@ -395,9 +421,3 @@ def _logout():
                     "message": "User logout successfully"
                 }
     return jsonify(response)
-
-
-@app.route( '/restricted', methods=['POST'] )
-@token_required
-def _restricted(user_id, token):
-    return 'ok'

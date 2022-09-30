@@ -10,15 +10,15 @@ BRANCH_STATUS_TUPLE = ('live', 'not_live')
 
 
 # functions
-def add_ticket( ticket_number, ticket_description, ticket_status ):
+def add_ticket( user_id, ticket_number, ticket_description, ticket_status ):
     con = db_connection()
     cur = con.cursor()
     if ticket_status not in TICKET_STATUS_TUPLE:
         raise Exception("Invalid Status")
     try:
         cur.execute(
-            "INSERT INTO tickets (t_code, t_description, t_status) VALUES ( %s, %s, %s )",
-            (ticket_number, ticket_description, ticket_status)
+            "INSERT INTO tickets (user_id, t_code, t_description, t_status) VALUES ( %s, %s, %s, %s )",
+            (user_id, ticket_number, ticket_description, ticket_status)
         )
         ticket_id = con.insert_id()
         con.commit()
@@ -31,12 +31,13 @@ def add_ticket( ticket_number, ticket_description, ticket_status ):
     return ticket_id
 
 
-def get_all_tickets():
+def get_all_tickets( user_id ):
     con = db_connection()
     cur = con.cursor()
     try:
         cur.execute(
-            "SELECT * FROM tickets;"
+            "SELECT * FROM tickets WHERE user_id = %s;",
+            (user_id)
         )
         tickets = cur.fetchall()
     except Exception as err:

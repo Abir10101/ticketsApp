@@ -1,14 +1,14 @@
 import datetime
-import bcrypt
 import secrets
 from app.db import *
 from auth.config import Config
 from auth.utils import *
+import werkzeug.security as _ws
 
 
 
 def register( username :str, password :str, name :str ) -> str:
-    hashed = bcrypt.hashpw( password.encode(), bcrypt.gensalt() )
+    hashed = _ws.generate_password_hash( password )
     secret = secrets.token_urlsafe(10)
     con = db_connection()
     cur = con.cursor()
@@ -46,7 +46,7 @@ def login( username :str, password :str ) -> str:
         cur.close()
         con.close()
     if user:
-        if bcrypt.checkpw( password.encode(), user['u_password'].encode() ):
+        if _ws.check_password_hash( user['u_password'], password ):
             token = encode_auth_token( user['id'], user['u_secret'] )
         else:
             raise Exception("Invalid Password")

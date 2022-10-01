@@ -72,7 +72,7 @@ def _tickets( user_id, token ):
                     "message": "Tickets fetched successfully",
                     "data": {
                         "token": token,
-                        "tickets": ticket_dict
+                        "tickets": tickets_dict
                     }
                 }
             else:
@@ -199,7 +199,7 @@ def _branches( user_id, token ):
             name = request_data['name']
             status = request_data['status']
             try:
-                branch_id = add_branch( ticket_id, name, status )
+                branch_id = add_branch( user_id, ticket_id, name, status )
             except Exception as err:
                 response = {
                     "isOk": False,
@@ -227,7 +227,7 @@ def _branches( user_id, token ):
         else:
             ticket_id = request_data['ticket_id']
             try:
-                branches = get_all_branches( ticket_id )
+                branches = get_all_branches( user_id, ticket_id )
             except Exception as err:
                 response = {
                     "isOk": False,

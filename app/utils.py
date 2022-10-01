@@ -52,11 +52,15 @@ def get_single_ticket( ticket_id ):
     con = db_connection()
     cur = con.cursor()
     try:
-        cur.execute(
-            "SELECT * FROM tickets WHERE id = %s;",
-            (ticket_id,)
-        )
-        ticket = cur.fetchone()
+        is_user_ticket = check_user_ticket( con, ticket_id, user_id )
+        if is_user_ticket:
+            cur.execute(
+                "SELECT * FROM tickets WHERE id = %s;",
+                (ticket_id,)
+            )
+            ticket = cur.fetchone()
+        else:
+            raise Exception("Invalid ticket id")
     except Exception as err:
         raise Exception(err)
     finally:
@@ -71,11 +75,15 @@ def update_ticket( ticket_id, ticket_code, ticket_description, ticket_status ):
     if ticket_status not in TICKET_STATUS_TUPLE:
         raise Exception("Invalid Status")
     try:
-        cur.execute(
-            "UPDATE tickets SET t_code = %s, t_description = %s, t_status = %s WHERE id = %s;",
-            (ticket_code, ticket_description, ticket_status, ticket_id)
-        )
-        con.commit()
+        is_user_ticket = check_user_ticket( con, ticket_id, user_id )
+        if is_user_ticket:
+            cur.execute(
+                "UPDATE tickets SET t_code = %s, t_description = %s, t_status = %s WHERE id = %s;",
+                (ticket_code, ticket_description, ticket_status, ticket_id)
+            )
+            con.commit()
+        else:
+            raise Exception("Invalid ticket id")
     except pymysql.err.IntegrityError:
         con.rollback()
         raise Exception(f"Ticket {ticket_code} already exists")
@@ -89,15 +97,19 @@ def delete_ticket( ticket_id ):
     con = db_connection()
     cur = con.cursor()
     try:
-        cur.execute(
-            "DELETE FROM tickets WHERE id = %s;",
-            (ticket_id,)
-        )
-        cur.execute(
-            "DELETE FROM branches WHERE ticket_id = %s;",
-            (ticket_id,)
-        )
-        con.commit()
+        is_user_ticket = check_user_ticket( con, ticket_id, user_id )
+        if is_user_ticket:
+            cur.execute(
+                "DELETE FROM tickets WHERE id = %s;",
+                (ticket_id,)
+            )
+            cur.execute(
+                "DELETE FROM branches WHERE ticket_id = %s;",
+                (ticket_id,)
+            )
+            con.commit()
+        else:
+            raise Exception("Invalid ticket id")
     except Exception as err:
         con.rollback()
         raise Exception(err)
@@ -107,18 +119,22 @@ def delete_ticket( ticket_id ):
     return True
 
 
-def add_branch( ticket_id, branch_name, branch_status ):
+def add_branch( user_id, ticket_id, branch_name, branch_status ):
     con = db_connection()
     cur = con.cursor()
     if branch_status not in BRANCH_STATUS_TUPLE:
         raise Exception("Invalid Status")
     try:
-        cur.execute(
-            "INSERT INTO branches (ticket_id, b_name, b_status) VALUES ( %s, %s, %s );",
-            (ticket_id, branch_name, branch_status,)
-        )
-        branch_id = con.insert_id()
-        con.commit()
+        is_user_ticket = check_user_ticket( con, ticket_id, user_id )
+        if is_user_ticket:
+            cur.execute(
+                "INSERT INTO branches (ticket_id, b_name, b_status) VALUES ( %s, %s, %s );",
+                (ticket_id, branch_name, branch_status,)
+            )
+            branch_id = con.insert_id()
+            con.commit()
+        else:
+            raise Exception("Invalid ticket id")
     except pymysql.err.IntegrityError:
         con.rollback()
         raise Exception(f"Branch {branch_name} already exists")
@@ -128,15 +144,19 @@ def add_branch( ticket_id, branch_name, branch_status ):
     return branch_id
 
 
-def get_all_branches( ticket_id ):
+def get_all_branches( user_id, ticket_id ):
     con = db_connection()
     cur = con.cursor()
     try:
-        cur.execute(
-            "SELECT id, b_name, b_status FROM branches WHERE ticket_id = %s;",
-            (ticket_id,)
-        )
-        branches = cur.fetchall()
+        is_user_ticket = check_user_ticket( con, ticket_id, user_id )
+        if is_user_ticket:
+            cur.execute(
+                "SELECT id, b_name, b_status FROM branches WHERE ticket_id = %s;",
+                (ticket_id,)
+            )
+            branches = cur.fetchall()
+        else:
+            raise Exception("Invalid ticket id")
     except Exception as err:
         raise Exception(err)
     finally:
@@ -181,3 +201,16 @@ def delete_branch( branch_id ):
         cur.close()
         con.close()
     return True
+
+
+def check_user_ticket( dbcon :pymysql.connections.Connection, ticket_id :int, user_id :int ) -> bool:
+    cur = dbcon.cursor()
+    cur.execute(
+        "SELECT user_id from tickets WHERE id = %s;",
+        (ticket_id)
+    )
+    ticket_user_id = cur.fetchone()['user_id']
+    if user_id != ticket_user_id:
+        return False
+    else:
+        return True

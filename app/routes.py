@@ -1,5 +1,5 @@
 from flask import jsonify, request
-from app import app
+from app import app, logger
 
 from app.utils import add_ticket, get_all_tickets, get_single_ticket, update_ticket, delete_ticket, add_branch, get_all_branches, update_branch, delete_branch
 from app.decorators import token_required

@@ -1,3 +1,0 @@
-2022-10-02 12:10:57,722 WARNING werkzeug MainThread :  * Debugger is active!
-2022-10-02 12:10:57,723 INFO werkzeug MainThread :  * Debugger PIN: 242-342-713
-2022-10-02 12:11:07,773 INFO werkzeug MainThread :  * Detected change in '/home/abir101/Misc/python/flask/ticketApp/app/logger.py', reloading

@@ -5,7 +5,7 @@ import auth
 
 
 # Global variables
-TICKET_STATUS_TUPLE = ('completed', 'ongoing', 'done')
+TICKET_STATUS_TUPLE = ('pending', 'ongoing', 'done')
 BRANCH_STATUS_TUPLE = ('live', 'not_live')
 
 
